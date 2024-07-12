@@ -104,4 +104,21 @@ class UserController extends Controller
             ], 500);
         }
     }
+     
+    public function getAllUsers()
+    {
+        try {
+            $users = User::all();
+            return response()->json([
+                'status' => true,
+                'users' => $users
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+    
 }
