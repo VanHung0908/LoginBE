@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('Address');
             $table->string('PhoneNumber');
             $table->date('StartDate');
-            $table->date('EndDate');
+            $table->date('EndDate')->nullable();
             $table->foreignId('UserID')->constrained('users');
             $table->timestamps();
         });
