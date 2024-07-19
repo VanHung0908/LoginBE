@@ -1,4 +1,4 @@
-name: laravel 
+name: Deploy Laravel
 
 on:
   push:
@@ -12,13 +12,24 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-    - name: Check runner IP
-      run: curl ifconfig.me  
-    - name: Check SSH connection
-      env:
-        SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-        HOST: ${{ secrets.SERVER_IP }}
-        USER: ${{ secrets.SERVER_USER }}
-      run: |
-        sshpass -p "$SSH_PASSWORD" ssh -vvv -o StrictHostKeyChecking=no $USER@$HOST 'echo "SSH connection successful"'
 
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Copy files via SSH
+      run: |
+        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/var/www/html/LoginBE
+
+    - name: Run remote commands
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+        cd /var/www/html/LoginBE
+        composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+        php artisan migrate --force
+        php artisan config:cache
+        php artisan route:cache
+        php artisan view:cache
+        sudo systemctl restart nginx
+        EOF
