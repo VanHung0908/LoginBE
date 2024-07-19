@@ -22,4 +22,5 @@ jobs:
         HOST: ${{ secrets.SERVER_IP }}
         USER: ${{ secrets.SERVER_USER }}
       run: |
-        sshpass -p "$SSH_PASSWORD" rsync -avz --rsh="sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no" --exclude='.git' ./ $USER@$HOST:/var/www/html/LoginBE/
+       
+sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no $USER@$HOST 'echo "SSH connection successful"'
