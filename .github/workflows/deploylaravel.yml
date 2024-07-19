@@ -20,7 +20,7 @@ jobs:
 
     - name: Add SSH key to known hosts
       run: |
-        mkdir -p ~/.ssh
+        if [ ! -d ~/.ssh ]; then mkdir -p ~/.ssh; fi
         ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
     - name: Test SSH Connection
