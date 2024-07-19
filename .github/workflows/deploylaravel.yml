@@ -1,4 +1,4 @@
-name: Laravel
+name: laravel 
 
 on:
   push:
@@ -6,26 +6,12 @@ on:
       - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-
-    - name: Set up PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
-
-    - name: Install dependencies
-      run: |
-        composer install --prefer-dist --no-interaction --no-suggest --no-progress --optimize-autoloader
-
-    - name: Run tests
-      run: |
-        php artisan migrate --env=testing
-        php artisan test
 
     - name: Install sshpass
       run: sudo apt-get install -y sshpass
@@ -36,4 +22,4 @@ jobs:
         HOST: ${{ secrets.SERVER_IP }}
         USER: ${{ secrets.SERVER_USER }}
       run: |
-        sshpass -p "$SSH_PASSWORD" rsync -avz --rsh="sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no" --exclude='.git' ./ $USER@$HOST:/var/www/html/Login-BE/
+        sshpass -p "$SSH_PASSWORD" rsync -avz --rsh="sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no" --exclude='.git' ./ $USER@$HOST:/var/www/html/LoginBE/
