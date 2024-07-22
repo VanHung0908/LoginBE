@@ -8,17 +8,20 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
-      - name: Deploy to VM
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
+
+      - name: Set up SSH key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy code
         run: |
-          echo "$SSH_PRIVATE_KEY" > private_key.pem
-          chmod 600 private_key.pem
-          rsync -avz -e "ssh -i private_key.pem" . $SSH_USER@$SSH_HOST:/var/www/html/LoginBE
-          ssh -i private_key.pem $SSH_USER@$SSH_HOST "cd /var/www/html/LoginBE && ./deploy-script.sh"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /var/www/html/LoginBE
+            git pull origin main
+            sudo systemctl restart nginx
+          EOF
