@@ -7,14 +7,14 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: Linux
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Setup SSH
-        uses: appleboy/ssh-action@v0.1.0
+        uses: aappleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
