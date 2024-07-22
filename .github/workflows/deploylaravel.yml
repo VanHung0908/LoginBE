@@ -23,7 +23,7 @@ jobs:
           expect \"password:\"
           send \"${SSH_PASSWORD}\r\"
           expect \"$ \"
-          send \"cd /var/www/html/LoginBE && git pull origin main && sudo systemctl restart "
+          send \"cd /var/www/html/LoginBE && git pull origin main && sudo systemctl restart nginx\r\"
           expect \"$ \"
           send \"exit\r\"
           " > deploy.expect
