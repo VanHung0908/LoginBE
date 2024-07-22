@@ -12,24 +12,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Install expect
+        run: sudo apt-get install -y expect
 
       - name: Deploy to VM
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          cd /path/to/your/project
-          git pull origin main
-          npm install
-          npm run build
-          pm2 restart your-app-name
-          EOF
+          # Tạo một script expect để tự động nhập mật khẩu
+          echo '
+          spawn ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST
+          expect "password:"
+          send "$SSH_PASSWORD\r"
+          expect "$ "
+          send "cd /var/www/html/LoginBE && git pull origin main && npm install && npm run build && pm2 restart your-app-name\r"
+          expect "$ "
+          send "exit\r"
+          ' > deploy.expect
+          
+          # Chạy script expect
+          expect deploy.expect
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+
