@@ -1,4 +1,4 @@
-name: Deploy Laravel
+name: Deploy to Server
 
 on:
   push:
@@ -10,29 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.7.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-    - name: Test SSH Connection
-      run: ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo 'SSH connection successful'"
-
-    - name: Copy files via SSH
-      run: |
-        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/var/www/html/LoginBE
-
-    - name: Run remote commands
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-        cd /var/www/html/LoginBE
-        composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
-        php artisan migrate --force
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
-        sudo systemctl restart nginx
-        EOF
+      - name: Setup SSH
+        uses: appleboy/ssh-action@v0.1.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/html/LoginBE
+            git pull origin main
+            # Lệnh để khởi động lại Nginx hoặc bất kỳ lệnh nào khác
+            sudo systemctl restart nginx
