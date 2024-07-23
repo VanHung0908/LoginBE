@@ -18,18 +18,18 @@ jobs:
       - name: Deploy to VM
         run: |
           # Tạo một script expect để tự động nhập mật khẩu
-          echo "
-          spawn ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST}
-          expect \"password:\"
-          send \"${SSH_PASSWORD}\r\"
-          expect \"$ \"
-          send \"cd /var/www/html/LoginBE && git pull origin main && sudo systemctl restart nginx\r\"
-          expect \"$ \"
-          send \"exit\r\"
-          " > deploy.expect
+          cat << 'EOF' > deploy.expect
+          spawn ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST
+          expect "password:"
+          send "$SSH_PASSWORD\r"
+          expect "$ "
+          send "cd /var/www/html/LoginBE && git pull origin main && sudo systemctl restart nginx\r"
+          expect "$ "
+          send "exit\r"
+          EOF
           
           # Chạy script expect
-          expect deploy.expect
+          /usr/bin/expect deploy.expect
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
