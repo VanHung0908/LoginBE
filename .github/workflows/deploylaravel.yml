@@ -18,23 +18,33 @@ jobs:
       - name: Deploy to VM
         run: |
           # Tạo một script expect để tự động nhập mật khẩu
-          cat << EOF > deploy.expect
-          spawn ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
-          expect "password:"
-          send "${{ secrets.SSH_PASSWORD }}\r"
-          expect "\\$ "
-          send "echo 'Logged in'; cd /var/www/html/LoginBE && git pull origin main && sudo systemctl restart nginx > deploy.log 2>&1\r"
-          expect "\\$ "
-          send "echo 'Commands executed'; exit\r"
-          EOF
+          echo "
+          spawn ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST}
+          expect \"password:\"
+          send \"${SSH_PASSWORD}\r\"
+          expect \"$ \"
+          send \"cd /var/www/html/LoginBE && git pull origin main && sudo systemctl restart nginx > deploy.log 2>&1\r\"
+          expect \"$ \"
+          send \"exit\r\"
+          " > deploy.expect
           
           # Chạy script expect
-          /usr/bin/expect deploy.expect
+          expect deploy.expect
           
-          # Tạo một script để kiểm tra nhật ký
-          cat << EOF > check_log.sh
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cat /var/www/html/LoginBE/deploy.log"
-          EOF
+          # Kiểm tra nhật ký
+          echo "
+          spawn ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST}
+          expect \"password:\"
+          send \"${SSH_PASSWORD}\r\"
+          expect \"$ \"
+          send \"cat /var/www/html/LoginBE/deploy.log\r\"
+          expect \"$ \"
+          send \"exit\r\"
+          " > check_log.expect
           
           # Chạy script kiểm tra nhật ký
-          bash check_log.sh
+          expect check_log.expect
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
