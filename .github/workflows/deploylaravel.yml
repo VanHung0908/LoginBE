@@ -7,25 +7,12 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Install SSH client
-      run: sudo apt-get install openssh-client
-
-    - name: Download and Setup Drone SSH
-      run: |
-        wget https://github.com/appleboy/drone-ssh/releases/download/v1.7.7/drone-ssh-1.7.7-linux-amd64.tar.gz
-        tar -xzf drone-ssh-1.7.7-linux-amd64.tar.gz
-        chmod +x drone-ssh
-
     - name: Connect to VM and Pull Code
       run: |
-        ./drone-ssh \
-          --host ${{ secrets.SSH_HOST }} \
-          --username ${{ secrets.SSH_USERNAME }} \
-          --password ${{ secrets.SSH_PASSWORD }} \
           --script "cd /var/www/html/LoginBE && git pull origin main"
