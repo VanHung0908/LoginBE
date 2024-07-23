@@ -17,51 +17,49 @@ jobs:
 
       - name: Deploy to VM
         run: |
-          # Tạo một script expect để tự động nhập mật khẩu
+          # Tạo một script expect để tự động nhập mật khẩu và thực thi lệnh
           echo "
           spawn ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST}
           expect \"password:\"
           send \"${SSH_PASSWORD}\r\"
-          expect \"$ \"
+          expect \"\\$ \"
           send \"cd /var/www/html/LoginBE\r\"
-          expect \"$ \"
+          expect \"\\$ \"
           send \"git pull origin main > git_pull.log 2>&1\r\"
-          expect \"$ \"
+          expect \"\\$ \"
           send \"sudo systemctl restart nginx > nginx_restart.log 2>&1\r\"
-          expect \"$ \"
+          expect \"\\$ \"
           send \"exit\r\"
           " > deploy.expect
           
-          # Chạy script expect
-          expect deploy.expect
+          # Chạy script expect để thực thi lệnh
+          /usr/bin/expect deploy.expect
           
-          # Kiểm tra nhật ký git pull
+          # Tạo một script expect để kiểm tra nội dung file git_pull.log
           echo "
           spawn ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST}
           expect \"password:\"
           send \"${SSH_PASSWORD}\r\"
-          expect \"$ \"
+          expect \"\\$ \"
           send \"cat /var/www/html/LoginBE/git_pull.log\r\"
-          expect \"$ \"
+          expect \"\\$ \"
           send \"exit\r\"
           " > check_git_log.expect
           
-          # Chạy script kiểm tra nhật ký git pull
-          expect check_git_log.expect
-          
-          # Kiểm tra nhật ký nginx restart
+          # Chạy script expect để kiểm tra nội dung file nginx_restart.log
           echo "
           spawn ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST}
           expect \"password:\"
           send \"${SSH_PASSWORD}\r\"
-          expect \"$ \"
+          expect \"\\$ \"
           send \"cat /var/www/html/LoginBE/nginx_restart.log\r\"
-          expect \"$ \"
+          expect \"\\$ \"
           send \"exit\r\"
           " > check_nginx_log.expect
           
-          # Chạy script kiểm tra nhật ký nginx restart
-          expect check_nginx_log.expect
+          # Chạy script kiểm tra nội dung file log
+          /usr/bin/expect check_git_log.expect
+          /usr/bin/expect check_nginx_log.expect
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
