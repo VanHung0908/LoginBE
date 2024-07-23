@@ -15,51 +15,20 @@ jobs:
       - name: Install expect
         run: sudo apt-get install -y expect
 
-      - name: Deploy to VM
+      - name: Test SSH Connection
         run: |
-          # Tạo một script expect để tự động nhập mật khẩu và thực thi lệnh
           echo "
           spawn ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST}
           expect \"password:\"
           send \"${SSH_PASSWORD}\r\"
           expect \"\\$ \"
-          send \"cd /var/www/html/LoginBE\r\"
-          expect \"\\$ \"
-          send \"git pull origin main > git_pull.log 2>&1\r\"
-          expect \"\\$ \"
-          send \"sudo systemctl restart nginx > nginx_restart.log 2>&1\r\"
+          send \"echo 'SSH Connection Successful'\r\"
           expect \"\\$ \"
           send \"exit\r\"
-          " > deploy.expect
+          " > test_ssh.expect
           
-          # Chạy script expect để thực thi lệnh
-          /usr/bin/expect deploy.expect
-          
-          # Tạo một script expect để kiểm tra nội dung file git_pull.log
-          echo "
-          spawn ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST}
-          expect \"password:\"
-          send \"${SSH_PASSWORD}\r\"
-          expect \"\\$ \"
-          send \"cat /var/www/html/LoginBE/git_pull.log\r\"
-          expect \"\\$ \"
-          send \"exit\r\"
-          " > check_git_log.expect
-          
-          # Chạy script expect để kiểm tra nội dung file nginx_restart.log
-          echo "
-          spawn ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST}
-          expect \"password:\"
-          send \"${SSH_PASSWORD}\r\"
-          expect \"\\$ \"
-          send \"cat /var/www/html/LoginBE/nginx_restart.log\r\"
-          expect \"\\$ \"
-          send \"exit\r\"
-          " > check_nginx_log.expect
-          
-          # Chạy script kiểm tra nội dung file log
-          /usr/bin/expect check_git_log.expect
-          /usr/bin/expect check_nginx_log.expect
+          # Chạy script expect để kiểm tra kết nối SSH
+          /usr/bin/expect test_ssh.expect
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
