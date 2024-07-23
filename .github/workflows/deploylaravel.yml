@@ -39,4 +39,4 @@ jobs:
 
     - name: Run deployment script
       run: |
-        ssh hung@192.168.4.123 ' cd /var/www/html/LoginBE && git pull'
+        ssh -o StrictHostKeyChecking=no hung@192.168.4.123 'cd /var/www/html/LoginBE && git pull'
